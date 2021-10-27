@@ -15,21 +15,15 @@ namespace Grigoriu
 {
     class SimpleWindow3D : GameWindow
     {
-        private const int XYZ_SIZE = 75;
-        private bool axesControl = true;
-        const float rotation_speed = 10.0f;
+        const float rotation_speed = 90.0f;
         float angle;
-        Randomizer rando;
         bool showCube = true;
-        bool showTriangle = true;
         KeyboardState lastKeyPress;
-        Color color = Color.LightBlue;
-            
+       
 
         public SimpleWindow3D() : base(800, 600)
         {
             VSync = VSyncMode.On;
-            rando = new Randomizer();
         }
 
         //Culoare fundal
@@ -37,9 +31,8 @@ namespace Grigoriu
         {
             base.OnLoad(e);
 
-            GL.ClearColor(Color.MidnightBlue);
-            GL.Enable(EnableCap.DepthTest);
-            GL.Hint(HintTarget.PolygonSmoothHint, HintMode.Nicest);
+            GL.ClearColor(Color.GreenYellow);
+           
         }
 
         //Inițierea afișării și setarea viewport-ului
@@ -54,36 +47,46 @@ namespace Grigoriu
             Matrix4 perspective = Matrix4.CreatePerspectiveFieldOfView(MathHelper.PiOver4, (float)aspect_ratio, 1, 64);
             GL.MatrixMode(MatrixMode.Projection);
             GL.LoadMatrix(ref perspective);
-
-            Matrix4 lookat = Matrix4.LookAt(20, 20, 20, 0, 0, 0, 0, 1, 0);
-            GL.MatrixMode(MatrixMode.Modelview);
-            GL.LoadMatrix(ref lookat);
         }
 
         protected override void OnUpdateFrame(FrameEventArgs e)
         {
             base.OnUpdateFrame(e);
-           
             Mouse.GetCursorState();
             KeyboardState keyboard = OpenTK.Input.Keyboard.GetState();
             MouseState mouse = OpenTK.Input.Mouse.GetState();
 
-            if (keyboard[Key.Escape])
+            if (keyboard[OpenTK.Input.Key.Escape])
             {
                 Exit();
+                return;
             }
-
-            //8. Schimbarea culorii triunghiului prin apasarea tastei S.
-            if (keyboard[Key.S] && !lastKeyPress[Key.S])
+            else if (keyboard[OpenTK.Input.Key.P] && !keyboard.Equals(lastKeyPress))
             {
-                
-                color = rando.GetRandomColor();
-                
+                // Ascundere comandată, prin apăsarea unei taste
+                if (showCube == true)
+                {
+                    showCube = false;
+                }
+                else
+                {
+                    showCube = true;
+                }
             }
-
-
             lastKeyPress = keyboard;
 
+            if (mouse[OpenTK.Input.MouseButton.Left])
+            {
+                // Ascundere comandată, prin clic de mouse
+                if (showCube == true)
+                {
+                    showCube = false;
+                }
+                else
+                {
+                    showCube = true;
+                }
+            }
         }
         protected override void OnRenderFrame(FrameEventArgs e)
         {
@@ -91,66 +94,70 @@ namespace Grigoriu
 
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
+            Matrix4 lookat = Matrix4.LookAt(15, 50, 15, 0, 0, 0, 0, 1, 0);
+            GL.MatrixMode(MatrixMode.Modelview);
+            GL.LoadMatrix(ref lookat);
 
-           // angle = rotation_speed * (float)e.Time;
-           //GL.Rotate(angle, 0.0f, 1.0f, 0.0f);
+            angle += rotation_speed * (float)e.Time;
+            GL.Rotate(angle, 0.0f, 1.0f, 0.0f);
 
-            if (showTriangle == true)
+            if (showCube == true)
             {
-                DrawTriangle();
+                DrawCube();
             }
 
-            if (axesControl)
-            {
-                DrawAxes();
-            }
             SwapBuffers();
         }
 
-        // Axele de coordonate desenate folosind un singur apel GL.Begin().
-        private void DrawAxes()
+        private void DrawCube()
         {
-            GL.LineWidth(2.0f);
-  
-            GL.Begin(PrimitiveType.Lines);
-            // Desenează axa Ox (cu roșu).
-            GL.Color3(Color.Red);
-            GL.Vertex3(0, 0, 0);
-            GL.Vertex3(XYZ_SIZE, 0, 0);
+            GL.Begin(PrimitiveType.Quads);
 
-            // Desenează axa Oy (cu galben).
-            GL.Color3(Color.Yellow);
-            GL.Vertex3(0, 0, 0);
-            GL.Vertex3(0, XYZ_SIZE, 0); ;
+            GL.Color3(Color.Silver);
+            GL.Vertex3(-1.0f, -1.0f, -1.0f);
+            GL.Vertex3(-1.0f, 1.0f, -1.0f);
+            GL.Vertex3(1.0f, 1.0f, -1.0f);
+            GL.Vertex3(1.0f, -1.0f, -1.0f);
 
-            // Desenează axa Oz (cu verde).
-            GL.Color3(Color.Green);
-            GL.Vertex3(0, 0, 0);
-            GL.Vertex3(0, 0, XYZ_SIZE);
+            GL.Color3(Color.Honeydew);
+            GL.Vertex3(-1.0f, -1.0f, -1.0f);
+            GL.Vertex3(1.0f, -1.0f, -1.0f);
+            GL.Vertex3(1.0f, -1.0f, 1.0f);
+            GL.Vertex3(-1.0f, -1.0f, 1.0f);
+
+            GL.Color3(Color.Moccasin);
+            GL.Vertex3(-1.0f, -1.0f, -1.0f);
+            GL.Vertex3(-1.0f, -1.0f, 1.0f);
+            GL.Vertex3(-1.0f, 1.0f, 1.0f);
+            GL.Vertex3(-1.0f, 1.0f, -1.0f);
+
+            GL.Color3(Color.IndianRed);
+            GL.Vertex3(-1.0f, -1.0f, 1.0f);
+            GL.Vertex3(1.0f, -1.0f, 1.0f);
+            GL.Vertex3(1.0f, 1.0f, 1.0f);
+            GL.Vertex3(-1.0f, 1.0f, 1.0f);
+
+            GL.Color3(Color.PaleVioletRed);
+            GL.Vertex3(-1.0f, 1.0f, -1.0f);
+            GL.Vertex3(-1.0f, 1.0f, 1.0f);
+            GL.Vertex3(1.0f, 1.0f, 1.0f);
+            GL.Vertex3(1.0f, 1.0f, -1.0f);
+
+            GL.Color3(Color.Blue);
+            GL.Vertex3(1.0f, -1.0f, -1.0f);
+            GL.Vertex3(1.0f, 1.0f, -1.0f);
+            GL.Vertex3(1.0f, 1.0f, 1.0f);
+            GL.Vertex3(1.0f, -1.0f, 1.0f);
+
             GL.End();
         }
-
-         private void DrawTriangle()
-         {
-             GL.Begin(PrimitiveType.TriangleStrip);
-
-             GL.Color3(color);
-             GL.Vertex3(2f, 1.0f, 6.0f);
-            GL.Vertex3(6f, 1.0f, 2.0f);
-            GL.Vertex3(4.0f, 7f, 5.0f);
-             GL.End();
-         }
-        
 
         [STAThread]
         static void Main(string[] args)
         {
-            Console.WriteLine("\n ===================================");
-            Console.WriteLine(" S - schimbare culoare triunghiului. ");
-            Console.WriteLine(" ===================================");
-            using (SimpleWindow3D example = new SimpleWindow3D())
+            using (SimpleWindow3D cub = new SimpleWindow3D())
             {
-                example.Run(30.0, 0.0);
+                cub.Run(30.0, 0.0);
             }
         }
 
